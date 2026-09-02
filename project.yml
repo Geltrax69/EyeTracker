@@ -1,0 +1,46 @@
+name: EyeTracker
+options:
+  bundleIdPrefix: com.geltrax
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    PRODUCT_BUNDLE_IDENTIFIER: com.geltrax.EyeTracker
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    GENERATE_INFOPLIST_FILE: NO
+    CODE_SIGN_STYLE: Automatic
+    CODE_SIGN_IDENTITY: "-"
+    DEVELOPMENT_TEAM: ""
+    ENABLE_HARDENED_RUNTIME: NO
+    SWIFT_STRICT_CONCURRENCY: minimal
+
+targets:
+  EyeTracker:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources
+    resources:
+      - path: Resources
+    info:
+      path: Sources/App/Info.plist
+      properties:
+        CFBundleName: EyeTracker
+        CFBundleDisplayName: Eye Tracker
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+        LSMinimumSystemVersion: "14.0"
+        NSHighResolutionCapable: true
+        NSCameraUsageDescription: "Eye Tracker uses your camera locally to estimate gaze direction. No images leave your Mac."
+        LSApplicationCategoryType: public.app-category.utilities
+    entitlements:
+      path: Sources/App/EyeTracker.entitlements
+      properties:
+        com.apple.security.app-sandbox: false
+        com.apple.security.device.camera: true
