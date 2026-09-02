@@ -41,4 +41,28 @@ assert(abs(GazeMath.deadzone(0.20, threshold: 0.08) - 0.12) < 1e-9, "no jump at 
 assert(abs(GazeMath.deadzone(-0.20, threshold: 0.08) + 0.12) < 1e-9)
 assert(GazeMath.deadzone(0.08, threshold: 0.08) == 0, "boundary is still inside the zone")
 
+
+assert(GazeMath.solve([[2, 0], [0, 4]], [2, 8])! == [1, 2])
+assert(GazeMath.solve([[1, 1], [2, 2]], [1, 2]) == nil, "singular system has no unique answer")
+
+// An exact plane must be recovered exactly: target = 0.5 - 3*f1 + 2*f2
+let plane: [(f1: Double, f2: Double, target: Double)] = [
+    (0.0, 0.0, 0.5), (0.1, 0.0, 0.2), (0.0, 0.1, 0.7), (0.2, 0.1, 0.1), (-0.1, -0.1, 0.6)
+]
+let fit = GazeMath.fitPlane(plane)!
+assert(abs(fit.c0 - 0.5) < 1e-4 && abs(fit.c1 + 3) < 1e-3 && abs(fit.c2 - 2) < 1e-3)
+assert(GazeMath.rmsError(plane, fit) < 1e-4)
+
+// The sign is learned, not assumed — this is the vertical bug's actual fix.
+let inverted: [(f1: Double, f2: Double, target: Double)] = [
+    (0.0, 0.0, 0.5), (0.1, 0.0, 0.8), (0.0, 0.1, 0.3), (0.2, 0.2, 0.5)
+]
+assert(GazeMath.fitPlane(inverted)!.c1 > 0, "feature rising with target gives a positive coefficient")
+
+assert(GazeMath.fitPlane([(0, 0, 0.5), (0, 0, 0.5)]) == nil, "too few samples to fit")
+// A feature that never varied must not blow the solve up.
+let flat: [(f1: Double, f2: Double, target: Double)] = [(0.0, 0.1, 0.4), (0.0, 0.2, 0.6), (0.0, 0.3, 0.8)]
+let flatFit = GazeMath.fitPlane(flat)!
+assert(flatFit.c0.isFinite && flatFit.c1.isFinite && flatFit.c2.isFinite)
+
 print("GazeMath OK")

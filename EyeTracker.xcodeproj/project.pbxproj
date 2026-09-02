@@ -11,6 +11,7 @@
 		2A35F4F152853ECC9922A5FD /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21853FADFCE24DCB5C6A1463 /* ContentView.swift */; };
 		5B4BDC772C7CD7BB1E71C610 /* EyeTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26B29FBEAE89D485459ADC23 /* EyeTrackerApp.swift */; };
 		A64E18E1ED09085AB247C88F /* GazeTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89186FC6475DB182EE31F119 /* GazeTracker.swift */; };
+		A7FE400B27F78A855CE2386C /* CalibrationOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA304AFC25CC7FEBC5997C42 /* CalibrationOverlay.swift */; };
 		C4A1FDE5814185AE301FB49D /* GazeMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 847EF898E25BDEC9BD6275F8 /* GazeMath.swift */; };
 /* End PBXBuildFile section */
 
@@ -23,6 +24,7 @@
 		847EF898E25BDEC9BD6275F8 /* GazeMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GazeMath.swift; sourceTree = "<group>"; };
 		8854579878C634C859A87684 /* CursorController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CursorController.swift; sourceTree = "<group>"; };
 		89186FC6475DB182EE31F119 /* GazeTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GazeTracker.swift; sourceTree = "<group>"; };
+		FA304AFC25CC7FEBC5997C42 /* CalibrationOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationOverlay.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -64,6 +66,7 @@
 		9CBBBFB6D14D672F2873E01B /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				FA304AFC25CC7FEBC5997C42 /* CalibrationOverlay.swift */,
 				21853FADFCE24DCB5C6A1463 /* ContentView.swift */,
 			);
 			path = UI;
@@ -147,6 +150,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A7FE400B27F78A855CE2386C /* CalibrationOverlay.swift in Sources */,
 				2A35F4F152853ECC9922A5FD /* ContentView.swift in Sources */,
 				005C3FE97DFBE7207E338E82 /* CursorController.swift in Sources */,
 				5B4BDC772C7CD7BB1E71C610 /* EyeTrackerApp.swift in Sources */,

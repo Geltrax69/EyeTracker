@@ -21,6 +21,19 @@ struct FaceDebug {
     var openness: Double?
 }
 
+/// A fitted mapping from eye/head features to screen position. Replaces the tuning
+/// sliders: each coefficient's sign and scale is measured, not guessed.
+struct Calibration {
+    var x: (c0: Double, c1: Double, c2: Double)
+    var y: (c0: Double, c1: Double, c2: Double)
+    var rms: Double
+
+    func screenPoint(px: Double, py: Double, yaw: Double, pitch: Double) -> CGPoint {
+        CGPoint(x: GazeMath.clamp01(x.c0 + x.c1 * px + x.c2 * yaw),
+                y: GazeMath.clamp01(y.c0 + y.c1 * py + y.c2 * pitch))
+    }
+}
+
 /// Camera -> Vision face landmarks -> cursor. One object, because splitting it into
 /// four would only mean four files that all change together.
 final class GazeTracker: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBufferDelegate {
@@ -36,6 +49,10 @@ final class GazeTracker: NSObject, ObservableObject, AVCaptureVideoDataOutputSam
     @Published var blinking = false
     @Published var blinkRecenters = true
     @Published var blinkCount = 0
+    @Published var calibration: Calibration?
+    @Published var calibrating = false
+    @Published var calibrationTarget = CGPoint(x: 0.5, y: 0.5)
+    @Published var calibrationStep = 0
     @Published var permission: AVAuthorizationStatus = .notDetermined
     @Published var cameraName = "—"
 
@@ -49,23 +66,31 @@ final class GazeTracker: NSObject, ObservableObject, AVCaptureVideoDataOutputSam
     /// Radians of head movement to ignore before it starts pushing the cursor.
     @Published var headDeadzone: Double = 0.06
 
-    private(set) var centerX: Double = 0.5
-    private(set) var centerY: Double = 0.5
-    private var rawX: Double = 0.5
-    private var rawY: Double = 0.5
-
     let session = AVCaptureSession()
     private let output = AVCaptureVideoDataOutput()
     private let queue = DispatchQueue(label: "gaze.frames")
     private var recenterFrames = 0
     private var recenterAccum = (x: 0.0, y: 0.0)
 
+    /// Nine targets across the screen, in normalized top-left-origin coords.
+    let calibrationTargets: [CGPoint] = [0.1, 0.5, 0.9].flatMap { y in
+        [0.1, 0.5, 0.9].map { CGPoint(x: $0, y: y) }
+    }
+    private var samplesX: [(f1: Double, f2: Double, target: Double)] = []
+    private var samplesY: [(f1: Double, f2: Double, target: Double)] = []
+    private var settleUntil = Date.distantPast
+    private var samplesHere = 0
+    private let samplesPerTarget = 20
+
+    /// Applied after the mapping, so a blink can re-centre a calibrated estimate too.
+    private var offset = CGPoint.zero
+
     /// Blink detection. A blink is a drop below `blinkThreshold` for a couple of frames;
     /// the eyes are shut during it, so recentering uses the last sample from before it.
     let blinkThreshold = 0.17
     private var closedFrames = 0
     private var blinkArmed = true
-    private var lastOpenSignal: (x: Double, y: Double)?
+    private var lastOpenPoint: CGPoint?
 
     // Safety valve: if the real cursor is far from where we last put it, the human moved
     // the mouse — hand control back for a moment instead of fighting them.
@@ -126,6 +151,7 @@ final class GazeTracker: NSObject, ObservableObject, AVCaptureVideoDataOutputSam
 
     func stop() {
         queue.async { self.session.stopRunning() }
+        calibrating = false
         isRunning = false
         controlsCursor = false
         faceDetected = false
@@ -135,10 +161,71 @@ final class GazeTracker: NSObject, ObservableObject, AVCaptureVideoDataOutputSam
 
     /// Look at the centre of the screen, then call this: it defines "straight ahead".
     func recenter() {
-        lastOpenSignal = nil
+        lastOpenPoint = nil
+        offset = .zero
         recenterAccum = (0, 0)
         recenterFrames = 30
         status = "Look at the centre of the screen…"
+    }
+
+    // MARK: - Calibration
+
+    func startCalibration() {
+        guard isRunning else { return }
+        samplesX = []; samplesY = []
+        calibrationStep = 0
+        calibrating = true
+        beginTarget()
+    }
+
+    func cancelCalibration() {
+        calibrating = false
+        status = isRunning ? "Tracking" : "Idle"
+    }
+
+    func clearCalibration() {
+        calibration = nil
+        offset = .zero
+        status = isRunning ? "Tracking (uncalibrated)" : "Idle"
+    }
+
+    private func beginTarget() {
+        calibrationTarget = calibrationTargets[calibrationStep]
+        samplesHere = 0
+        settleUntil = Date().addingTimeInterval(1.0)   // time to actually move your eyes there
+        status = "Look at the dot — \(calibrationStep + 1) of \(calibrationTargets.count)"
+    }
+
+    /// Returns true while calibration is consuming the frame.
+    private func collectCalibration(px: Double, py: Double, yaw: Double, pitch: Double) -> Bool {
+        guard calibrating else { return false }
+        guard Date() >= settleUntil else { return true }
+
+        let target = calibrationTargets[calibrationStep]
+        samplesX.append((f1: px, f2: yaw, target: Double(target.x)))
+        samplesY.append((f1: py, f2: pitch, target: Double(target.y)))
+        samplesHere += 1
+        guard samplesHere >= samplesPerTarget else { return true }
+
+        calibrationStep += 1
+        if calibrationStep < calibrationTargets.count {
+            beginTarget()
+        } else {
+            finishCalibration()
+        }
+        return true
+    }
+
+    private func finishCalibration() {
+        calibrating = false
+        guard let fx = GazeMath.fitPlane(samplesX), let fy = GazeMath.fitPlane(samplesY) else {
+            status = "Calibration failed — not enough usable samples, try again"
+            return
+        }
+        let rms = (GazeMath.rmsError(samplesX, fx) + GazeMath.rmsError(samplesY, fy)) / 2
+        calibration = Calibration(x: fx, y: fy, rms: rms)
+        offset = .zero
+        status = String(format: "Calibrated — average error %.0f%% of the screen", rms * 100)
     }
 
     private func configureIfNeeded() {
@@ -233,36 +320,49 @@ final class GazeTracker: NSObject, ObservableObject, AVCaptureVideoDataOutputSam
         let offsets = [d.leftOffset, d.rightOffset].compactMap { $0 }
         let px = offsets.map { Double($0.x) }.reduce(0, +) / Double(offsets.count)
         let py = offsets.map { Double($0.y) }.reduce(0, +) / Double(offsets.count)
+
         // Eyes steer near the centre; head turn carries the cursor the rest of the way.
         let yaw = GazeMath.deadzone(d.yaw, threshold: headDeadzone)
         let pitch = GazeMath.deadzone(d.pitch, threshold: headDeadzone)
-        let signal = (x: px * gainX + yaw * yawGain, y: py * gainY + pitch * pitchGain)
 
-        if handleBlink(d, signal: signal) { return }   // eyes shut: pupils mean nothing
+        if handleBlink(d, raw: rawPoint(px: px, py: py, yaw: yaw, pitch: pitch)) { return }
+        if collectCalibration(px: px, py: py, yaw: yaw, pitch: pitch) { return }
+
+        let raw = rawPoint(px: px, py: py, yaw: yaw, pitch: pitch)
 
         if recenterFrames > 0 {
-            recenterAccum.x += signal.x
-            recenterAccum.y += signal.y
+            recenterAccum.x += Double(raw.x)
+            recenterAccum.y += Double(raw.y)
             recenterFrames -= 1
             if recenterFrames == 0 {
-                centerX = recenterAccum.x / 30
-                centerY = recenterAccum.y / 30
-                rawX = 0.5; rawY = 0.5
-                status = isRunning ? "Tracking" : "Idle"
+                offset = CGPoint(x: 0.5 - recenterAccum.x / 30, y: 0.5 - recenterAccum.y / 30)
+                gaze = CGPoint(x: 0.5, y: 0.5)
+                status = isRunning ? (calibration == nil ? "Tracking (uncalibrated)" : "Tracking") : "Idle"
             }
             return
         }
 
-        // gains are already folded into the signal, so map with gain 1
-        rawX = GazeMath.ema(rawX, GazeMath.map(raw: signal.x, center: centerX, gain: 1), alpha: smoothing)
-        rawY = GazeMath.ema(rawY, GazeMath.map(raw: signal.y, center: centerY, gain: 1), alpha: smoothing)
-        gaze = CGPoint(x: rawX, y: 1 - rawY)  // Vision origin is bottom-left, screens are top-left
+        let target = CGPoint(x: GazeMath.clamp01(Double(raw.x + offset.x)),
+                             y: GazeMath.clamp01(Double(raw.y + offset.y)))
+        gaze = CGPoint(x: GazeMath.ema(Double(gaze.x), Double(target.x), alpha: smoothing),
+                       y: GazeMath.ema(Double(gaze.y), Double(target.y), alpha: smoothing))
         if controlsCursor { moveCursor(to: gaze) }
     }
 
-    /// Returns true while the eyes are shut. On the blink itself, snap the baseline to the
-    /// last open-eyed sample so the dot returns to the middle of the screen.
-    private func handleBlink(_ d: FaceDebug, signal: (x: Double, y: Double)) -> Bool {
+    /// Screen position before smoothing and blink offset. Uses the fitted calibration when
+    /// there is one, and the tuning sliders when there is not.
+    /// Vision's y axis points up and the screen's points down, hence the `1 -` in the slider path.
+    private func rawPoint(px: Double, py: Double, yaw: Double, pitch: Double) -> CGPoint {
+        if let calibration {
+            return calibration.screenPoint(px: px, py: py, yaw: yaw, pitch: pitch)
+        }
+        return CGPoint(x: GazeMath.clamp01(0.5 + px * gainX + yaw * yawGain),
+                       y: 1 - GazeMath.clamp01(0.5 + py * gainY + pitch * pitchGain))
+    }
+
+    /// Returns true while the eyes are shut. On the blink itself, shift the estimate so the
+    /// last open-eyed reading maps to the middle of the screen.
+    private func handleBlink(_ d: FaceDebug, raw: CGPoint) -> Bool {
         guard let openness = d.openness else { return false }
         let shut = openness < blinkThreshold
         blinking = shut
@@ -270,17 +370,16 @@ final class GazeTracker: NSObject, ObservableObject, AVCaptureVideoDataOutputSam
         guard shut else {
             closedFrames = 0
             blinkArmed = true
-            lastOpenSignal = signal
+            lastOpenPoint = raw
             return false
         }
 
         closedFrames += 1
-        if closedFrames == 2, blinkArmed, blinkRecenters, recenterFrames == 0, let pre = lastOpenSignal {
+        if closedFrames == 2, blinkArmed, blinkRecenters, !calibrating,
+           recenterFrames == 0, let pre = lastOpenPoint {
             blinkArmed = false          // one recenter per blink, not one per closed frame
             blinkCount += 1
-            centerX = pre.x
-            centerY = pre.y
-            rawX = 0.5; rawY = 0.5
+            offset = CGPoint(x: offset.x + (0.5 - pre.x), y: offset.y + (0.5 - pre.y))
             gaze = CGPoint(x: 0.5, y: 0.5)
         }
         return true

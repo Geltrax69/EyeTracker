@@ -3,6 +3,7 @@ import AVFoundation
 
 struct ContentView: View {
     @StateObject private var tracker = GazeTracker()
+    @State private var overlay = CalibrationOverlay()
 
     var body: some View {
         VStack(spacing: 12) {
@@ -52,6 +53,8 @@ struct ContentView: View {
                     tracker.isRunning ? tracker.stop() : tracker.start()
                 }
                 .buttonStyle(.borderedProminent)
+                Button("Calibrate") { tracker.startCalibration() }
+                    .disabled(!tracker.isRunning || tracker.calibrating)
                 Button("Re-center") { tracker.recenter() }.disabled(!tracker.isRunning)
                 Toggle("Move cursor", isOn: $tracker.controlsCursor).disabled(!tracker.isRunning)
             }
@@ -63,7 +66,18 @@ struct ContentView: View {
                 Text("\(tracker.blinkCount) blinks").font(.caption).foregroundStyle(.secondary)
             }
 
-            GroupBox("Tuning") {
+            HStack(spacing: 12) {
+                if let c = tracker.calibration {
+                    Text(String(format: "Calibrated · error %.0f%%", c.rms * 100))
+                        .font(.caption).foregroundStyle(.green)
+                    Button("Clear") { tracker.clearCalibration() }.font(.caption)
+                } else {
+                    Text("Not calibrated — using the sliders below")
+                        .font(.caption).foregroundStyle(.orange)
+                }
+            }
+
+            GroupBox(tracker.calibration == nil ? "Tuning" : "Tuning (unused while calibrated)") {
                 Slider(value: $tracker.gainX, in: -20...20) { Text("Eye X \(tracker.gainX, specifier: "%.1f")") }
                 Slider(value: $tracker.gainY, in: -40...40) { Text("Eye Y \(tracker.gainY, specifier: "%.1f")") }
                 Slider(value: $tracker.yawGain, in: -12...12) { Text("Head yaw \(tracker.yawGain, specifier: "%.1f")") }
@@ -78,6 +92,9 @@ struct ContentView: View {
         .padding()
         .frame(width: 480)
         .onAppear { tracker.refreshDiagnostics() }
+        .onChange(of: tracker.calibrating) { _, active in
+            active ? overlay.show(tracker: tracker) : overlay.close()
+        }
     }
 
     private var permissionText: String {
