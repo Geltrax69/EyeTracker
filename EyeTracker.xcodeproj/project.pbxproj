@@ -8,52 +8,39 @@
 
 /* Begin PBXBuildFile section */
 		005C3FE97DFBE7207E338E82 /* CursorController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8854579878C634C859A87684 /* CursorController.swift */; };
-		03BCB6E83255BE5B1865D367 /* PermissionsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BEA42E974BB017B33279DA9 /* PermissionsManager.swift */; };
-		0B2A94A100A6D9F971CC3701 /* CalibrationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08E42BBAB560FF73E3EB9C90 /* CalibrationManager.swift */; };
 		2A35F4F152853ECC9922A5FD /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21853FADFCE24DCB5C6A1463 /* ContentView.swift */; };
-		43DDF7846DD6AB602EBCBFD3 /* CameraManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41B6077E9E6F7C53AE7D8964 /* CameraManager.swift */; };
 		5B4BDC772C7CD7BB1E71C610 /* EyeTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26B29FBEAE89D485459ADC23 /* EyeTrackerApp.swift */; };
-		6689B9B29F4B0DCB720DCDAC /* EyeFeatures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E15D306F447284DFFCC200A /* EyeFeatures.swift */; };
-		70B0F7B8704606C5A06B1A2C /* CalibrationPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3D6BDBEAC59AA0A55321C57 /* CalibrationPoint.swift */; };
-		8A86B162BF912B8AFC9BF848 /* EyeTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AF3E5F3026EFD2A6992A328 /* EyeTracker.swift */; };
-		C706D53FBAEA5586E7C1BEFE /* GazeEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7962C3A1FB3271432B4DAF4D /* GazeEstimator.swift */; };
-		CDF28DE459D23410C97DE73F /* CalibrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9CBAB2B500C962800CD379B /* CalibrationView.swift */; };
-		DC3FA542EDA932C18B3291A2 /* GazeSmoother.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A38EBB46C3EE6DBF77FB8B /* GazeSmoother.swift */; };
+		A64E18E1ED09085AB247C88F /* GazeTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89186FC6475DB182EE31F119 /* GazeTracker.swift */; };
+		C4A1FDE5814185AE301FB49D /* GazeMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 847EF898E25BDEC9BD6275F8 /* GazeMath.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		03A38EBB46C3EE6DBF77FB8B /* GazeSmoother.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GazeSmoother.swift; sourceTree = "<group>"; };
-		08E42BBAB560FF73E3EB9C90 /* CalibrationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationManager.swift; sourceTree = "<group>"; };
-		0E15D306F447284DFFCC200A /* EyeFeatures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EyeFeatures.swift; sourceTree = "<group>"; };
-		1AF3E5F3026EFD2A6992A328 /* EyeTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EyeTracker.swift; sourceTree = "<group>"; };
 		21853FADFCE24DCB5C6A1463 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		26B29FBEAE89D485459ADC23 /* EyeTrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EyeTrackerApp.swift; sourceTree = "<group>"; };
 		2CFAF17C9B008C9E39638D6C /* EyeTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EyeTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		41B6077E9E6F7C53AE7D8964 /* CameraManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraManager.swift; sourceTree = "<group>"; };
 		5D6220980EAE67A80E70F8BE /* EyeTracker.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = EyeTracker.entitlements; sourceTree = "<group>"; };
 		7328240AFC2CE294AB17E661 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		7962C3A1FB3271432B4DAF4D /* GazeEstimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GazeEstimator.swift; sourceTree = "<group>"; };
+		847EF898E25BDEC9BD6275F8 /* GazeMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GazeMath.swift; sourceTree = "<group>"; };
 		8854579878C634C859A87684 /* CursorController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CursorController.swift; sourceTree = "<group>"; };
-		9BEA42E974BB017B33279DA9 /* PermissionsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsManager.swift; sourceTree = "<group>"; };
-		A9CBAB2B500C962800CD379B /* CalibrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationView.swift; sourceTree = "<group>"; };
-		F3D6BDBEAC59AA0A55321C57 /* CalibrationPoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationPoint.swift; sourceTree = "<group>"; };
+		89186FC6475DB182EE31F119 /* GazeTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GazeTracker.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
-		097FA3F1FE87D50661596725 /* Vision */ = {
-			isa = PBXGroup;
-			children = (
-				1AF3E5F3026EFD2A6992A328 /* EyeTracker.swift */,
-			);
-			path = Vision;
-			sourceTree = "<group>";
-		};
 		341B9F48B0F7BCF0B114167F /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				2CFAF17C9B008C9E39638D6C /* EyeTracker.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		3B572CAA323452D2E9026F48 /* Tracker */ = {
+			isa = PBXGroup;
+			children = (
+				847EF898E25BDEC9BD6275F8 /* GazeMath.swift */,
+				89186FC6475DB182EE31F119 /* GazeTracker.swift */,
+			);
+			path = Tracker;
 			sourceTree = "<group>";
 		};
 		430E4C67CAC3B8FEAD416B08 /* App */ = {
@@ -66,16 +53,6 @@
 			path = App;
 			sourceTree = "<group>";
 		};
-		71C4549ECA632063896D2399 /* Gaze */ = {
-			isa = PBXGroup;
-			children = (
-				08E42BBAB560FF73E3EB9C90 /* CalibrationManager.swift */,
-				7962C3A1FB3271432B4DAF4D /* GazeEstimator.swift */,
-				03A38EBB46C3EE6DBF77FB8B /* GazeSmoother.swift */,
-			);
-			path = Gaze;
-			sourceTree = "<group>";
-		};
 		88C5B58E162A5A442D61B529 /* Cursor */ = {
 			isa = PBXGroup;
 			children = (
@@ -84,30 +61,12 @@
 			path = Cursor;
 			sourceTree = "<group>";
 		};
-		8C1B0DDF4B001863F914CBA7 /* Models */ = {
-			isa = PBXGroup;
-			children = (
-				F3D6BDBEAC59AA0A55321C57 /* CalibrationPoint.swift */,
-				0E15D306F447284DFFCC200A /* EyeFeatures.swift */,
-			);
-			path = Models;
-			sourceTree = "<group>";
-		};
 		9CBBBFB6D14D672F2873E01B /* UI */ = {
 			isa = PBXGroup;
 			children = (
-				A9CBAB2B500C962800CD379B /* CalibrationView.swift */,
 				21853FADFCE24DCB5C6A1463 /* ContentView.swift */,
 			);
 			path = UI;
-			sourceTree = "<group>";
-		};
-		D4E6B0214C87105BAB2DCCF0 /* Utilities */ = {
-			isa = PBXGroup;
-			children = (
-				9BEA42E974BB017B33279DA9 /* PermissionsManager.swift */,
-			);
-			path = Utilities;
 			sourceTree = "<group>";
 		};
 		D68A7B322B901EE6CDDC1F2E = {
@@ -122,23 +81,11 @@
 			isa = PBXGroup;
 			children = (
 				430E4C67CAC3B8FEAD416B08 /* App */,
-				EF61A1E53E42C339611E6EB2 /* Camera */,
 				88C5B58E162A5A442D61B529 /* Cursor */,
-				71C4549ECA632063896D2399 /* Gaze */,
-				8C1B0DDF4B001863F914CBA7 /* Models */,
+				3B572CAA323452D2E9026F48 /* Tracker */,
 				9CBBBFB6D14D672F2873E01B /* UI */,
-				D4E6B0214C87105BAB2DCCF0 /* Utilities */,
-				097FA3F1FE87D50661596725 /* Vision */,
 			);
 			path = Sources;
-			sourceTree = "<group>";
-		};
-		EF61A1E53E42C339611E6EB2 /* Camera */ = {
-			isa = PBXGroup;
-			children = (
-				41B6077E9E6F7C53AE7D8964 /* CameraManager.swift */,
-			);
-			path = Camera;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -200,18 +147,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0B2A94A100A6D9F971CC3701 /* CalibrationManager.swift in Sources */,
-				70B0F7B8704606C5A06B1A2C /* CalibrationPoint.swift in Sources */,
-				CDF28DE459D23410C97DE73F /* CalibrationView.swift in Sources */,
-				43DDF7846DD6AB602EBCBFD3 /* CameraManager.swift in Sources */,
 				2A35F4F152853ECC9922A5FD /* ContentView.swift in Sources */,
 				005C3FE97DFBE7207E338E82 /* CursorController.swift in Sources */,
-				6689B9B29F4B0DCB720DCDAC /* EyeFeatures.swift in Sources */,
-				8A86B162BF912B8AFC9BF848 /* EyeTracker.swift in Sources */,
 				5B4BDC772C7CD7BB1E71C610 /* EyeTrackerApp.swift in Sources */,
-				C706D53FBAEA5586E7C1BEFE /* GazeEstimator.swift in Sources */,
-				DC3FA542EDA932C18B3291A2 /* GazeSmoother.swift in Sources */,
-				03BCB6E83255BE5B1865D367 /* PermissionsManager.swift in Sources */,
+				C4A1FDE5814185AE301FB49D /* GazeMath.swift in Sources */,
+				A64E18E1ED09085AB247C88F /* GazeTracker.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
