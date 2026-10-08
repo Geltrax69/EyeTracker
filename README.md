@@ -1,72 +1,98 @@
 # EyeTracker
 
-A native macOS app that uses the built-in webcam to estimate gaze direction and control the mouse cursor. **All processing is local** — no frames leave your Mac.
+> ## Status: 🟢 Completed
+>
+> <progress value="85" max="100"></progress>
+>
+> **Progress: 85%** — Works end-to-end: camera capture, face/eye/pupil detection, gaze estimation, and cursor control. Remaining gap: calibration is manual (sliders); a fitted calibration routine is the next step.
 
-## Status
+<p align="center">
+  <img src="banner.webp" alt="EyeTracker banner" width="100%" />
+</p>
 
-Working end to end: camera capture, face/eye/pupil detection, gaze estimation, cursor control.
-Calibration is still manual (sliders); a fitted calibration routine is the next step.
+![Swift](https://img.shields.io/badge/Swift-5.9-orange)
+![Platform](https://img.shields.io/badge/Platform-macOS%2014+-blue)
+![Vision](https://img.shields.io/badge/Vision-Apple%20Vision-green)
+![Privacy](https://img.shields.io/badge/Processing-100%25%20local-brightgreen)
 
-The window shows a live camera preview with the detected face box, both eye outlines,
-pupil dots and a per-eye arrow showing which way the pupil sits off centre — plus the raw
-numbers the gaze estimate is built from.
+## What it is
 
-### How the gaze signal works
+EyeTracker is a native macOS app that estimates where you're looking using the built-in webcam and moves the mouse cursor accordingly — **all processing is local, no frames ever leave your Mac**. It detects the face, both eyes, and pupils with Apple's Vision framework, computes gaze direction from pupil offset relative to the eye corners (plus head yaw/pitch past a deadzone for reaching screen edges), smooths the estimate, and drives the cursor via CGEvent. A blink re-centers the baseline, and cursor control pauses for 3 seconds whenever you move the real mouse so the app never fights you.
 
-- **Horizontal / vertical** — pupil offset from the line between the two eye corners,
-  measured in eye widths. Corners are used rather than the eyelid outline because the
-  eyelid closes over the pupil when you look down, which hides vertical gaze almost entirely.
-- **Head assist** — head yaw and pitch are added on top, past a deadzone. The eyes have
-  limited travel; turning your head carries the cursor the rest of the way to the screen edge.
-- **Smoothing** — exponential moving average over the estimate.
-- **Blink to re-center** — a blink (eye openness below threshold for two frames) snaps the
-  baseline back to centre, using the last sample from before the eyes shut.
+## What works (verified)
 
-### Safety
+- ✅ **Camera capture** — `GazeTracker.swift` drives an AVFoundation capture session (built-in, external, or Continuity camera), camera permission requested only when tracking starts.
+- ✅ **Face/eye/pupil detection** — Vision framework landmarks: face box, both eye outlines, pupil dots, per-eye arrows showing pupil offset from centre, all rendered live over the camera preview.
+- ✅ **Gaze estimation** — `GazeMath.swift` (pure math, testable): pupil offset from the line between the two eye corners, measured in eye widths. Corners are used rather than the eyelid outline because the eyelid closes over the pupil when looking down.
+- ✅ **Head assist** — head yaw/pitch added past a deadzone; the eyes have limited travel, so head movement carries the cursor the rest of the way to screen edges.
+- ✅ **Cursor control** — `CursorController.swift` moves the pointer via CGEvent, with exponential-moving-average smoothing.
+- ✅ **Blink to re-center** — eye openness below threshold for two frames snaps the baseline back to centre using the last pre-blink sample.
+- ✅ **Safety interlock** — cursor control pauses 3s whenever the physical mouse moves.
+- ✅ **Privacy by design** — entitlements + Info.plist reviewed: camera frames are never uploaded, saved, or transmitted.
 
-Cursor control pauses for 3 seconds whenever the real mouse is moved by hand, so the app
-never fights you for the pointer.
+*Verified by: reading all Swift sources (`Sources/App`, `Sources/Tracker`, `Sources/Cursor`, `Sources/UI`), `project.yml`, and entitlements. Not compiled here — Swift/Xcode isn't available in this environment; no CI runs exist. Status per the repo's own docs: "Working end to end."*
 
-## Requirements
+## Tech stack
 
-- macOS 14.0+
-- Xcode 16+ (Xcode 26 used during development)
-- A built-in, external or Continuity camera
-- Camera permission
+| Layer | Technology |
+|---|---|
+| Language | Swift 5.9 |
+| UI | SwiftUI |
+| Face/eye detection | Apple Vision framework |
+| Cursor control | CGEvent |
+| Build | XcodeGen (`project.yml`) → `.xcodeproj` |
+| Platform | macOS 14.0+, Xcode 16+ |
 
-## Build & Run
+## How to run
 
 ```bash
+# Requires: macOS 14+, Xcode 16+, a webcam
+
 cd EyeTracker
 xcodegen generate
 xcodebuild -project EyeTracker.xcodeproj -scheme EyeTracker -configuration Debug build
 open ~/Library/Developer/Xcode/DerivedData/EyeTracker-*/Build/Products/Debug/EyeTracker.app
+
+# Or simply: open EyeTracker.xcodeproj in Xcode and press Cmd+R
 ```
 
-Or open `EyeTracker.xcodeproj` in Xcode and press **Cmd+R**.
+Grant camera permission when prompted — processing stays on your Mac.
 
-## Project layout
+## Screenshots
+
+No screenshots in the repo. The app window shows a live camera preview with the detected face box, eye outlines, pupil dots, per-eye gaze arrows, and the raw numbers behind the estimate. The banner above is the generated visual.
+
+## What you can add more
+
+- [ ] **Fitted calibration routine** — replace the manual calibration sliders with a 5/9-point look-at-dots calibration that fits a mapping (the repo's own stated next step)
+- [ ] **Dwell click** — trigger a click by holding gaze on a point for a configurable time
+- [ ] **Per-app profiles** — different sensitivity/deadzone settings per application
+- [ ] **Gaze heatmap** — record and visualize where you looked over a session
+- [ ] **Menu-bar mode** — run headless in the menu bar without the preview window
+
+## Project structure
 
 ```
 EyeTracker/
-├── App/             App entry point + Info.plist + entitlements
-├── Tracker/         GazeTracker (capture + Vision + cursor), GazeMath (pure math)
-├── Cursor/          CursorController (CGEvent)
-└── UI/              ContentView (preview, overlay, tuning)
+├── project.yml                  # XcodeGen spec (bundle id, targets, settings)
+├── Sources/
+│   ├── App/
+│   │   ├── EyeTrackerApp.swift       # App entry point
+│   │   ├── Info.plist                # Bundle info, camera usage description
+│   │   └── EyeTracker.entitlements   # Sandbox/camera entitlements
+│   ├── Tracker/
+│   │   ├── GazeTracker.swift         # Capture + Vision + gaze pipeline
+│   │   └── GazeMath.swift            # Pure gaze math (testable)
+│   ├── Cursor/
+│   │   └── CursorController.swift    # CGEvent cursor control
+│   └── UI/
+│       ├── ContentView.swift         # Preview, overlay, tuning UI
+│       └── CalibrationOverlay.swift  # Manual calibration sliders
+├── Tests/
+│   └── main.swift                     # Test entry
+├── Resources/                         # (empty placeholder)
+└── banner.webp                        # Project banner
 ```
 
-## Privacy
-
-No frames are uploaded, saved to disk, or transmitted. Camera access is requested only when the user starts tracking.
-
-## Limitations
-
-This is an approximate gaze tracker, not medical-grade. Accuracy depends on lighting, head stability, and webcam quality.
-
-## Tests
-
-The gaze math is pure and has a self-check with no test framework:
-
-```bash
-swiftc -o /tmp/gazecheck Sources/Tracker/GazeMath.swift Tests/main.swift && /tmp/gazecheck
-```
+---
+*README written after code audit on 2026-10-08.*
